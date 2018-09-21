@@ -1,6 +1,8 @@
 sap.ui.controller(["POC.controller.GoogleMapView"], {
     onInit: function () {
         this.getView().byId("map_canvas").addStyleClass("myMap");
+        this.initialized = false;
+        this.defaultCenterLocation = new google.maps.LatLng(-34.397, 150.644)
     },
     onAfterRendering: function () {
         if (!this.initialized) {
@@ -9,7 +11,7 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
 
             this.geocoder = new google.maps.Geocoder();
             var mapOptions = {
-                center: new google.maps.LatLng(-34.397, 150.644),
+                center: this.defaultCenterLocation,
                 zoom: 10,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
@@ -34,50 +36,45 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
             }
         });
     },
-    CreateMarker: function(POI,position,map){
-        console.log("plaats marker op " + POI.Name);
+    CreateMarker: function(address,position){
+        console.log("plaats marker op " + address.Name);
 
         var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
         var icontype = "";
         var contentString = '<div id="content">'+
-                          '<h1 id="firstHeading" class="firstHeading">'+ POI.Adress +'</h1>'+
+                          '<h1 id="firstHeading" class="firstHeading">'+ address.Adress +'</h1>'+
                           '<div id="bodyContent">'+
-                          '<p>'+ POI.Name + '</p>'+
+                          '<p>'+ address.Name + '</p>'+
                           '</div>'+
                           '</div>';
         var infowindow = new google.maps.InfoWindow({
         content: contentString
         });
-        var mapconfig = {}
+        var mapconfig = {map: this.map,position: position};
 
-        switch(POI.Type){
+        switch(address.Type){
           case("School"):
-              icontype = iconBase + "library_maps.png";
+              mapconfig.icon = iconBase + "library_maps.png";
           break;
           case("Work"):
-              icontype = iconBase + "info-i_maps.png";
+              mapconfig.icon = iconBase + "info-i_maps.png";
           break;
         };
-
-        if(this.icontype==""){
-        mapconfig = {map: map,position: position};
-        }else{
-        mapconfig = {map: map,position: position,icon: icontype};
-        }
         var marker = new google.maps.Marker(mapconfig);
 
-        marker.addListener('click', function() {
-                infowindow.open(map, marker);
 
-                var items = this.getView().byId("addressList").getItems();
-                items.forEach(function(item){
-                    attributes = item.getAttributes()
-                    if(attributes[0].getText() == POI.Adress + " " + POI.City ){
-                        item.setHighlight(sap.ui.core.MessageType.Success);
-                    }else{
-                        item.setHighlight(sap.ui.core.MessageType.None);
-                    }
-                });
+        marker.addListener('click', function(){
+                infowindow.open(this.map, marker);
+
+                   var items = this.getView().byId("addressList").getItems();
+                   items.forEach(function(item){
+                       attributes = item.getAttributes()
+                       if(attributes[0].getText() == address.Adress + " " + address.City ){
+                           item.setHighlight(sap.ui.core.MessageType.Success);
+                       }else{
+                           item.setHighlight(sap.ui.core.MessageType.None);
+                       }
+                   });
         }.bind(this));
 
     },
@@ -101,7 +98,7 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
     },
     goTo: function (name, address, type) {
         var map = this.map;
-        this.geocoder.geocode({ 'address': address }, function (results, status) {
+        this.geocoder.geocode({ 'address': address, componentRestrictions: { country: 'NL' }}, function (results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
                 map.setCenter(results[0].geometry.location);
                 map.setZoom(17);
@@ -115,31 +112,33 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
                 jQuery.getJSON('file:///android_asset/www/Adresses.json')
                                 .done(function (results){
                                    resolve(results);
+                                })
+                                .error(function(e){
+                                    console.log(e);
+                                    reject();
                                 });
               });
 
     },
     placeAddressToMap : function(AddressJson){
         Addresses = AddressJson.Adresses;
-            Addresses.forEach(function(POI){
-                 this.handleGeocodeRequest(POI).then(function(position){
-                    console.log(POI.Name);
-                    this.CreateMarker(POI,position,this.map);
+            Addresses.forEach(function(address){
+                 this.GeocodeAddress(address).then(function(position){
+                    console.log(address.Name);
+                    this.CreateMarker(address,position);
                     this.bounds.extend(position);
                     this.map.fitBounds(this.bounds);
                  }.bind(this));
             }.bind(this));
     },
-    handleGeocodeRequest: function(POI){
-        var POI = POI;
+    GeocodeAddress: function(address){
         return new Promise((resolve,reject) => {
-            var geocoder = new google.maps.Geocoder();
-            geocoder.geocode({'address': POI.Adress + " " + POI.City}, function(results,status){
+            this.geocoder.geocode({'address': address.Adress + " " + address.City, componentRestrictions: { country: 'NL' }}, function(results,status){
                 if(status === 'OK'){
                     var position = results[0].geometry.location
                     resolve(position);
                 }else {
-                    console.log("Error when searching for position : " + POI.Name);
+                    console.log("Error when searching for position : " + address.Name);
                 }
             });
         });
