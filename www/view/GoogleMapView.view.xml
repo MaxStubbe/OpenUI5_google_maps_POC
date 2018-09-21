@@ -1,0 +1,39 @@
+<core:View height="100%" controllerName="POC.controller.GoogleMapView"
+    xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc"
+    xmlns:layout="sap.ui.layout"
+    xmlns:html="http://www.w3.org/1999/xhtml">
+    <Page id="mainPage" title="GMaps">
+        <HBox fitContainer="true">
+            <VBox
+                fitContainer="true"
+                width="30%"
+                >
+                <Panel
+                    headerText="AddressList">
+                    <List
+                        id="addressList"
+                        width="auto"
+                        items="{adress>/Adresses}"
+                        fitContainer="true">
+                        <items>
+                            <ObjectListItem
+                                title="{adress>Name}"
+                                type="Active"
+                                press="onPress">
+                                <attributes>
+                                    <ObjectAttribute text="{adress>Adress} {adress>City}"/>
+                                    <ObjectAttribute text="{adress>Type}"/>
+                                </attributes>
+                            </ObjectListItem>
+                        </items>
+                    </List>
+                </Panel>
+            </VBox>
+            <!--<VBox fitContainer="true" justifyContent="Center" alignItems="Center">-->
+                <!--<Input id="inpSearch" editable="true" value="51.5033640 -0.1276250" maxLength="80"/>-->
+                <!--<Button id="bntSearch" text="Search" tap="actSearch" />-->
+            <!--</VBox>-->
+            <VBox fitContainer="true" justifyContent="Center" alignItems="Center" id="map_canvas"/>
+        </HBox>
+    </Page>
+</core:View>

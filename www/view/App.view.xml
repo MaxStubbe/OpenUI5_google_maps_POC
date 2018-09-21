@@ -1,0 +1,9 @@
+<mvc:View
+    controllerName="POC.controller.appView"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true">
+    <App class="Demo">
+        <mvc:XMLView viewName="POC.view.GoogleMapView"/>
+    </App>
+</mvc:View>

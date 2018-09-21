@@ -1,0 +1,64 @@
+{
+  "Adresses": [
+    {
+      "Name":"Bart Elshout(oud)",
+      "Type": "Person",
+      "Adress": "22 Korf",
+      "City": "Almkerk",
+      "coords": {
+        "lat": "",
+        "long": ""
+      }
+    },
+    {
+      "Name":"Bart Elshout(nieuw)",
+      "Type": "Person",
+      "Adress": "24 Korf",
+      "City": "Almkerk",
+      "coords": {
+        "lat": "",
+        "long": ""
+      }
+    },
+    {
+      "Name":"Max Stubbe",
+      "Type": "Person",
+      "Adress": "37 Ruitenveenstraat",
+      "City": "Tilburg",
+      "coords": {
+        "lat": "",
+        "long": ""
+      }
+    },
+    {
+      "Name":"Jens Bax",
+      "Type": "Person",
+      "Adress": "64 Milhezestraat",
+      "City": "Tilburg",
+      "coords": {
+        "lat": "",
+        "long": ""
+      }
+    },
+    {
+      "Name": "Ideo",
+      "Type": "Work",
+      "Adress": "1b Rompertdreef",
+      "City": "Den Bosch",
+      "coords": {
+        "lat": "",
+        "long": ""
+      }
+    },
+    {
+      "Name":"Avans Hogeschool",
+      "Type": "School",
+      "Adress": "1 Hogeschoollaan",
+      "City": "Breda",
+      "coords": {
+        "lat": "",
+        "long": ""
+      }
+    }
+  ]
+}
