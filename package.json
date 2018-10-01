@@ -10,7 +10,6 @@
   "author": "Apache Cordova Team",
   "license": "Apache-2.0",
   "dependencies": {
-    "cordova-android": "^6.3.0",
     "cordova-plugin-geolocation": "^4.0.1",
     "cordova-plugin-googlemaps": "^2.4.2",
     "cordova-plugin-nativegeocoder": "^3.1.2",
@@ -25,8 +24,6 @@
       "cordova-plugin-geolocation": {},
       "cordova-plugin-nativegeocoder": {}
     },
-    "platforms": [
-      "android"
-    ]
+    "platforms": []
   }
 }

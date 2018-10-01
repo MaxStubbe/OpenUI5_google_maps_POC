@@ -14,7 +14,8 @@
                         id="addressList"
                         width="auto"
                         items="{adress>/Adresses}"
-                        fitContainer="true">
+                        fitContainer="true"
+                    >
                         <items>
                             <ObjectListItem
                                 title="{adress>Name}"

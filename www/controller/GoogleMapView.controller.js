@@ -2,7 +2,9 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
     onInit: function () {
         this.getView().byId("map_canvas").addStyleClass("myMap");
         this.initialized = false;
-        this.defaultCenterLocation = new google.maps.LatLng(-34.397, 150.644)
+        this.defaultCenterLocation = new google.maps.LatLng(-34.397, 150.644);
+
+        sap.ui.getCore().getEventBus().subscribe("placeSelected", this.onPlaceSelected, this);
     },
     onAfterRendering: function () {
         if (!this.initialized) {
@@ -63,40 +65,30 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
         var marker = new google.maps.Marker(mapconfig);
 
 
-        marker.addListener('click', function(){
+        marker.addListener('click', function(oEvent){
                 infowindow.open(this.map, marker);
-
-                   var items = this.getView().byId("addressList").getItems();
-                   items.forEach(function(item){
-                       attributes = item.getAttributes()
-                       if(attributes[0].getText() == address.Adress + " " + address.City ){
-                           item.setHighlight(sap.ui.core.MessageType.Success);
-                       }else{
-                           item.setHighlight(sap.ui.core.MessageType.None);
-                       }
-                   });
+                console.log(address);
+                sap.ui.getCore().getEventBus().publish("placeSelected", { location: address });
         }.bind(this));
 
     },
-    onPress: function (oEvent) {
-        var name = oEvent.getSource().getTitle();
-        console.log(name);
-        var attributes = oEvent.getSource().getAttributes();
-        var address = attributes[0].getText();
-        var type = attributes[1].getText();
-        console.log(address);
-        this.goTo(name, address, type);
-
+    onPlaceSelected: function(sChannelId, sEventId, oData){
         var items = this.getView().byId("addressList").getItems();
-        items.forEach(function(item){
-            if(item._active){
+        items.forEach(function(item) {
+            if (item.getTitle() === oData.location.Name ) {
                 item.setHighlight(sap.ui.core.MessageType.Success);
             }else{
                 item.setHighlight(sap.ui.core.MessageType.None);
             }
         });
     },
-    goTo: function (name, address, type) {
+    onPress: function (oEvent) {
+        var address = oEvent.getSource().getBindingContext("adress").getObject();
+        var fullAddress = address.Adress + " " + address.City
+        this.goTo(fullAddress);
+        sap.ui.getCore().getEventBus().publish("placeSelected", { location: address });
+    },
+    goTo: function (address) {
         var map = this.map;
         this.geocoder.geocode({ 'address': address, componentRestrictions: { country: 'NL' }}, function (results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
@@ -125,7 +117,7 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
             Addresses.forEach(function(address){
                  this.GeocodeAddress(address).then(function(position){
                     console.log(address.Name);
-                    this.CreateMarker(address,position);
+                    this.CreateMarker(address, position);
                     this.bounds.extend(position);
                     this.map.fitBounds(this.bounds);
                  }.bind(this));
