@@ -6,21 +6,20 @@
         <HBox fitContainer="true">
             <VBox
                 fitContainer="true"
-                width="30%"
-                >
+                width="30%">
                 <Panel
                     headerText="AddressList">
                     <List
                         id="addressList"
                         width="auto"
                         items="{adress>/Adresses}"
-                        fitContainer="true"
-                    >
+                        fitContainer="true">
                         <items>
                             <ObjectListItem
                                 title="{adress>Name}"
                                 type="Active"
-                                press="onPress">
+                                press="onPress"
+                                highlight="{parts: ['adress>Selected'], formatter: '.formatSelectionHighlighted'}">
                                 <attributes>
                                     <ObjectAttribute text="{adress>Adress} {adress>City}"/>
                                     <ObjectAttribute text="{adress>Type}"/>

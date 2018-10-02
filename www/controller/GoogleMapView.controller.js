@@ -4,7 +4,6 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
         this.initialized = false;
         this.defaultCenterLocation = new google.maps.LatLng(-34.397, 150.644);
 
-        sap.ui.getCore().getEventBus().subscribe("placeSelected", this.onPlaceSelected, this);
     },
     onAfterRendering: function () {
         if (!this.initialized) {
@@ -19,8 +18,7 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
             };
             this.map = new google.maps.Map(this.getView().byId("map_canvas").getDomRef(),mapOptions);
             this.bounds = new google.maps.LatLngBounds();
-
-            this.getAddressJson().then(this.placeAddressToMap.bind(this));
+            this.placeAddressToMap();
         }
     },
     actSearch: function () {
@@ -38,7 +36,7 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
             }
         });
     },
-    CreateMarker: function(address,position){
+    CreateMarker: function(address,position, modelIndex){
         console.log("plaats marker op " + address.Name);
 
         var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
@@ -67,30 +65,36 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
 
         marker.addListener('click', function(oEvent){
                 infowindow.open(this.map, marker);
-                console.log(address);
-                sap.ui.getCore().getEventBus().publish("placeSelected", { location: address });
+                this.setSelectedAddress("/Adresses/"+ modelIndex);
         }.bind(this));
-
     },
-    onPlaceSelected: function(sChannelId, sEventId, oData){
-        var items = this.getView().byId("addressList").getItems();
-        items.forEach(function(item) {
-            if (item.getTitle() === oData.location.Name ) {
-                item.setHighlight(sap.ui.core.MessageType.Success);
-            }else{
-                item.setHighlight(sap.ui.core.MessageType.None);
-            }
+    setSelectedAddress(sSelectedPath){
+        var model = this.getView().getModel("adress");
+        model.oData.Adresses.forEach(function(address, index){
+            var sPath = "/Adresses/"+index;
+            model.setProperty(sPath+"/Selected", sPath === sSelectedPath);
         });
     },
+    formatSelectionHighlighted : function (bSelected) {
+            if (bSelected) {
+                return sap.ui.core.MessageType.Success;
+            }
+            return sap.ui.core.MessageType.None;
+        },
     onPress: function (oEvent) {
-        var address = oEvent.getSource().getBindingContext("adress").getObject();
-        var fullAddress = address.Adress + " " + address.City
-        this.goTo(fullAddress);
-        sap.ui.getCore().getEventBus().publish("placeSelected", { location: address });
+        var binding = oEvent.getSource().getBindingContext("adress");
+        var path = binding.sPath;
+        this.setSelectedAddress(path);
+        this.goTo(path);
     },
-    goTo: function (address) {
+    goTo: function (sSelectedPath) {
+        var model = this.getView().getModel("adress");
+        address = model.getProperty(sSelectedPath+"/Adress");
+        city = model.getProperty(sSelectedPath+"/City");
+        fullAddress = address + " " + city;
+
         var map = this.map;
-        this.geocoder.geocode({ 'address': address, componentRestrictions: { country: 'NL' }}, function (results, status) {
+        this.geocoder.geocode({ 'address': fullAddress, componentRestrictions: { country: 'NL' }}, function (results, status) {
             if (status == google.maps.GeocoderStatus.OK) {
                 map.setCenter(results[0].geometry.location);
                 map.setZoom(17);
@@ -99,25 +103,13 @@ sap.ui.controller(["POC.controller.GoogleMapView"], {
             }
         });
     },
-    getAddressJson: function(){
-        return new Promise((resolve, reject) => {
-                jQuery.getJSON('file:///android_asset/www/Adresses.json')
-                                .done(function (results){
-                                   resolve(results);
-                                })
-                                .error(function(e){
-                                    console.log(e);
-                                    reject();
-                                });
-              });
-
-    },
-    placeAddressToMap : function(AddressJson){
-        Addresses = AddressJson.Adresses;
-            Addresses.forEach(function(address){
+    placeAddressToMap : function(){
+        var model = this.getView().getModel("adress");
+        Addresses = model.oData.Adresses;
+            Addresses.forEach(function(address, modelIndex){
                  this.GeocodeAddress(address).then(function(position){
                     console.log(address.Name);
-                    this.CreateMarker(address, position);
+                    this.CreateMarker(address, position, modelIndex);
                     this.bounds.extend(position);
                     this.map.fitBounds(this.bounds);
                  }.bind(this));
